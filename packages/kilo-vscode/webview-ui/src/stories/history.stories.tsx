@@ -99,8 +99,6 @@ const WithSessions: ParentComponent<{ sessions?: typeof mockSessions }> = (props
     deleteSession: noop,
     renameSession: noop,
     syncSession: noop,
-    cloudPreviewId: () => null,
-    selectCloudSession: noop,
   }
 
   return (
@@ -176,7 +174,7 @@ export const WithItems: Story = {
 }
 
 export const Sources: Story = {
-  name: "Local and cloud sources",
+  name: "History view",
   render: () => (
     <WithSessions sessions={mockSessions as any}>
       <div style={{ height: "500px" }}>

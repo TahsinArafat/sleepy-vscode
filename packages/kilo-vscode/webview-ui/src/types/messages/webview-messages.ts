@@ -82,35 +82,8 @@ export interface LoadSessionsRequest {
   type: "loadSessions"
 }
 
-export interface RequestCloudSessionsMessage {
-  type: "requestCloudSessions"
-  cursor?: string
-  limit?: number
-  gitUrl?: string
-}
-
 export interface RequestGitRemoteUrlMessage {
   type: "requestGitRemoteUrl"
-}
-
-export interface RequestCloudSessionDataMessage {
-  type: "requestCloudSessionData"
-  sessionId: string
-}
-
-export interface ImportAndSendMessage {
-  type: "importAndSend"
-  cloudSessionId: string
-  text: string
-  messageID?: string
-  providerID?: string
-  modelID?: string
-  agent?: string
-  variant?: string
-  files?: FileAttachment[]
-  review?: ReviewMessageData
-  command?: string
-  commandArgs?: string
 }
 
 export interface LoginRequest {
@@ -1145,7 +1118,6 @@ export type WebviewMessage =
   | ClearSessionRequest
   | LoadMessagesRequest
   | LoadSessionsRequest
-  | RequestCloudSessionsMessage
   | RequestGitRemoteUrlMessage
   | LoginRequest
   | LogoutRequest
@@ -1250,8 +1222,6 @@ export type WebviewMessage =
   | SetReviewMarkdownRenderRequest
   | PersistVariantRequest
   | RequestVariantsMessage
-  | RequestCloudSessionDataMessage
-  | ImportAndSendMessage
   | RequestBranchesMessage
   | RequestExternalWorktreesMessage
   | ImportFromBranchRequest

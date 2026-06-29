@@ -158,9 +158,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   let sandboxAttempts = 0
   const sandboxID = () => {
     const id = session.currentSessionID()
-    return id?.startsWith("cloud:") ? undefined : id
+    return id
   }
-  const sandboxVisible = () => features().sandboxControls && !session.currentSessionID()?.startsWith("cloud:")
+  const sandboxVisible = () => features().sandboxControls
   const sandbox = () => {
     const state = sandboxState()
     return state?.sessionID === sandboxID() ? state : undefined

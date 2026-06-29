@@ -281,9 +281,6 @@ interface SessionContextValue {
   exportSessionTranscript: (id: string) => void
   syncSession: (sessionID: string) => void
 
-  // Cloud session preview
-  cloudPreviewId: Accessor<string | null>
-  selectCloudSession: (cloudSessionId: string) => void
   draftSessionID: Accessor<string | undefined>
   setDraftSessionID: (id: string | undefined) => void
 }
@@ -434,8 +431,6 @@ export const SessionProvider: ParentComponent = (props) => {
   // Pending agent selection for before a session exists
   const [pendingAgentSelection, setPendingAgentSelection] = createSignal<string | null>(null)
 
-  // Cloud session preview state
-  const [cloudPreviewId, setCloudPreviewId] = createSignal<string | null>(null)
   const [hiddenErrors, setHiddenErrors] = createSignal<Set<string>>(new Set())
 
   // Live worktree diff stats from extension polling
@@ -1081,26 +1076,6 @@ export const SessionProvider: ParentComponent = (props) => {
         handleSendMessageFailed(message as unknown as SendMessageFailedMessage)
         break
 
-      case "cloudSessionDataLoaded":
-        handleCloudSessionDataLoaded(message.cloudSessionId, message.title, message.messages)
-        break
-
-      case "cloudSessionImported":
-        handleCloudSessionImported(message.cloudSessionId, message.session)
-        break
-
-      case "cloudSessionImportFailed":
-        setCloudPreviewId(null)
-        setCurrentSessionID(undefined)
-        setLoading(false)
-        showToast({
-          variant: "error",
-          title: language.t("session.cloud.import.failed") ?? "Failed to import cloud session",
-          description: message.error,
-        })
-        console.error("[Kilo New] Cloud session import failed:", message.error)
-        break
-
       case "worktreeStatsLoaded":
         setWorktreeStats({ files: message.files, additions: message.additions, deletions: message.deletions })
         break
@@ -1176,10 +1151,9 @@ export const SessionProvider: ParentComponent = (props) => {
         )
       }
 
-      // Only initialize messages if none exist yet — a cloud session import
-      // (handleCloudSessionImported) may have already populated messages for
-      // this session ID. The SSE session.created event can race with the
-      // cloudSessionImported message, and wiping to [] causes a flash of
+      // Only initialize messages if none exist yet — an import may have
+      // already populated messages for this session ID. The SSE session.created
+      // event can race with the import, and wiping to [] causes a flash of
       // the empty/welcome screen.
       if (!store.messages[session.id]?.length) {
         setStore("messages", session.id, [])
@@ -1817,7 +1791,6 @@ export const SessionProvider: ParentComponent = (props) => {
         "sessions",
         produce((sessions) => {
           for (const id of Object.keys(sessions)) {
-            if (id.startsWith("cloud:")) continue
             if (kept?.has(id)) continue
             if (!ids.has(id)) delete sessions[id]
           }
@@ -1950,108 +1923,6 @@ export const SessionProvider: ParentComponent = (props) => {
     stash.remove(messageID)
   }
 
-  function handleCloudSessionDataLoaded(cloudSessionId: string, title: string, messages: Message[]) {
-    if (cloudPreviewId() !== cloudSessionId) return
-    const key = `cloud:${cloudSessionId}`
-    batch(() => {
-      setLoaded((prev) => {
-        if (prev.has(key)) return prev
-        const next = new Set(prev)
-        next.add(key)
-        return next
-      })
-      setStore("sessions", key, {
-        id: key,
-        title,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-      patchPage(key, { initialLoaded: true, hasMore: false, lastMutation: "replace" })
-      setStore("messages", key, messages)
-      for (const msg of messages) {
-        if (msg.parts && msg.parts.length > 0) {
-          setStore("parts", msg.id, msg.parts)
-        }
-      }
-      rebuildToolParts(key, messages)
-      setCurrentSessionID(key)
-      setLoading(false)
-    })
-  }
-
-  function handleCloudSessionImported(cloudSessionId: string, session: SessionInfo) {
-    const cloudKey = `cloud:${cloudSessionId}`
-    const cloudMessages = store.messages[cloudKey] ?? []
-    batch(() => {
-      setLoaded((prev) => {
-        const next = new Set(prev)
-        next.add(session.id)
-        next.delete(cloudKey)
-        return next
-      })
-      setStore("sessions", session.id, session)
-
-      const pendingAgent = pendingAgentSelection()
-      if (pendingAgent && !store.agentSelections[session.id]) {
-        setStore("agentSelections", session.id, pendingAgent)
-      }
-
-      // Carry over cloud messages so there's no loading flash
-      setStore("messages", session.id, cloudMessages)
-      rebuildToolParts(session.id, cloudMessages)
-
-      setCloudPreviewId(null)
-      setCurrentSessionID(session.id)
-
-      // Clean up synthetic cloud: entries from sessions/messages stores.
-      //
-      // Why we do NOT delete cloud parts here:
-      //
-      // During preview, parts are stored keyed by the original cloud message IDs
-      // (e.g. store.parts["<cloud-msg-id>"] = [...]). When the import completes
-      // we carry cloudMessages into the new local session (above) so the UI
-      // renders immediately without a loading flash. Those carried-over message
-      // objects still hold their original cloud IDs, so every SessionTurn
-      // calls getParts("<cloud-msg-id>") — which means the parts must remain in
-      // the store for now.
-      //
-      // If we deleted them here, every message would temporarily render with no
-      // parts (parts().length === 0), showing only a loading shimmer until the
-      // real data arrives.
-      //
-      // Instead, right after this batch we dispatch a "loadMessages" request
-      // (below). When the extension responds with the "messagesLoaded" event,
-      // handleMessagesLoaded() replaces the messages array with server-assigned
-      // IDs and writes new parts keyed by those IDs. The old cloud-keyed part
-      // entries become orphans — no message in the store references them anymore.
-      // They remain in store.parts until the webview reloads or the store is
-      // reset, which is a bounded, one-session-worth amount of data that does
-      // not accumulate over time.
-      setStore(
-        "sessions",
-        produce((sessions) => {
-          delete sessions[cloudKey]
-        }),
-      )
-      setStore(
-        "messages",
-        produce((messages) => {
-          delete messages[cloudKey]
-        }),
-      )
-      setStore(
-        "toolParts",
-        produce((parts) => {
-          delete parts[cloudKey]
-        }),
-      )
-    })
-    // Load real messages in the background (picks up server-assigned IDs
-    // and the new user message once the send completes via SSE)
-    patchPage(session.id, { loadingInitial: true, before: undefined, hasMore: false })
-    vscode.postMessage({ type: "loadMessages", sessionID: session.id, mode: "replace", limit: MESSAGE_PAGE_LIMIT })
-  }
-
   // Actions
   function selectAgent(name: string, sessionID?: string) {
     const id = sessionID ?? currentSessionID()
@@ -2146,25 +2017,6 @@ export const SessionProvider: ParentComponent = (props) => {
 
     const messageID = Identifier.ascending("message")
 
-    const preview = cloudPreviewId()
-    if (preview) {
-      const scope = draftID ?? currentSessionID()
-      const agent = promptAgent(scope)
-      vscode.postMessage({
-        type: "importAndSend",
-        cloudSessionId: preview,
-        text,
-        messageID,
-        providerID,
-        modelID,
-        agent,
-        variant: currentVariant(scope),
-        files,
-        review,
-      })
-      return
-    }
-
     const sid = currentSessionID()
     const suggestion = scopedSuggestions(sid)[0]
     if (suggestion) dismissSuggestion(suggestion.id)
@@ -2208,27 +2060,6 @@ export const SessionProvider: ParentComponent = (props) => {
   ) {
     if (!server.isConnected()) {
       console.warn("[Kilo New] Cannot send command: not connected")
-      return
-    }
-
-    // Cloud previews need import-then-command; post importAndSend with command metadata
-    const preview = cloudPreviewId()
-    if (preview) {
-      const scope = draftID ?? currentSessionID()
-      const agent = promptAgent(scope)
-      vscode.postMessage({
-        type: "importAndSend",
-        cloudSessionId: preview,
-        text: `/${command} ${args}`.trim(),
-        messageID: Identifier.ascending("message"),
-        providerID,
-        modelID,
-        agent,
-        variant: currentVariant(scope),
-        files,
-        command,
-        commandArgs: args,
-      })
       return
     }
 
@@ -2404,7 +2235,6 @@ export const SessionProvider: ParentComponent = (props) => {
   function clearCurrentSession() {
     setCurrentSessionID(undefined)
     setDraftSessionID(undefined)
-    setCloudPreviewId(null)
     setLoading(false)
     setPendingAgentSelection(defaultAgent())
     vscode.postMessage({ type: "clearSession" })
@@ -2438,10 +2268,6 @@ export const SessionProvider: ParentComponent = (props) => {
       console.warn("[Kilo New] Cannot select session: not connected")
       return
     }
-    if (id.startsWith("cloud:")) {
-      console.warn("[Kilo New] Cannot select cloud preview session via selectSession")
-      return
-    }
     const ready = loaded().has(id)
     setCurrentSessionID(id)
     setDraftSessionID(id)
@@ -2452,19 +2278,6 @@ export const SessionProvider: ParentComponent = (props) => {
     }
     patchPage(id, { loadingInitial: true, loadingOlder: false, before: undefined, hasMore: false })
     vscode.postMessage({ type: "loadMessages", sessionID: id, mode: "replace", limit: MESSAGE_PAGE_LIMIT })
-  }
-
-  function selectCloudSession(cloudSessionId: string) {
-    if (!server.isConnected()) {
-      console.warn("[Kilo New] Cannot select cloud session: not connected")
-      return
-    }
-    const key = `cloud:${cloudSessionId}`
-    setCloudPreviewId(cloudSessionId)
-    setCurrentSessionID(key)
-    setDraftSessionID(key)
-    setLoading(true)
-    vscode.postMessage({ type: "requestCloudSessionData", sessionId: cloudSessionId })
   }
 
   function deleteSession(id: string) {
@@ -2499,10 +2312,6 @@ export const SessionProvider: ParentComponent = (props) => {
   function exportSessionTranscript(id: string) {
     if (!server.isConnected()) {
       console.warn("[Kilo New] Cannot export session transcript: not connected")
-      return
-    }
-    if (id.startsWith("cloud:")) {
-      console.warn("[Kilo New] Cannot export cloud session transcript")
       return
     }
     vscode.postMessage({ type: "exportSessionTranscript", sessionID: id })
@@ -2621,7 +2430,6 @@ export const SessionProvider: ParentComponent = (props) => {
 
   const sessions = createMemo(() =>
     Object.values(store.sessions)
-      .filter((s) => !s.id.startsWith("cloud:"))
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
   )
 
@@ -2812,8 +2620,6 @@ export const SessionProvider: ParentComponent = (props) => {
     renameSession,
     exportSessionTranscript,
     syncSession,
-    cloudPreviewId,
-    selectCloudSession,
     draftSessionID,
     setDraftSessionID,
   }
