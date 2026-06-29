@@ -8,8 +8,8 @@ import {
 
 export { KILO_GATEWAY_ID, PROVIDER_ORDER }
 
-export const KILO_AUTO_SMALL_IDS = new Set(["kilo-auto/small", "auto-small"])
-export const KILO_AUTO_EFFICIENT_ID = "kilo-auto/efficient"
+export const KILO_AUTO_SMALL_IDS = new Set(["sleepy-auto/small", "auto-small"])
+export const KILO_AUTO_EFFICIENT_ID = "sleepy-auto/efficient"
 const AUTO_FALLBACK = "Routes requests automatically."
 
 interface Choice {
@@ -19,7 +19,7 @@ interface Choice {
 
 export function isAuto(model: Pick<EnrichedModel, "providerID" | "id">): boolean {
   return (
-    model.providerID === KILO_GATEWAY_ID && (model.id.startsWith("kilo-auto/") || KILO_AUTO_SMALL_IDS.has(model.id))
+    model.providerID === KILO_GATEWAY_ID && (model.id.startsWith("sleepy-auto/") || KILO_AUTO_SMALL_IDS.has(model.id))
   )
 }
 

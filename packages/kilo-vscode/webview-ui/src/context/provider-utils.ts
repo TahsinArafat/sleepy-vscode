@@ -1,4 +1,5 @@
 import type { Provider, ProviderModel, ModelSelection } from "../types/messages"
+import { KILO_PROVIDER_ID } from "../../../src/shared/provider-model"
 
 export type EnrichedModel = ProviderModel & { providerID: string; providerName: string }
 
@@ -41,6 +42,6 @@ export function isModelValid(
   if (!selection) return false
   const provider = providers[selection.providerID]
   if (!provider) return false
-  if (selection.providerID !== "kilo" && !connected.includes(selection.providerID)) return false
+  if (selection.providerID !== KILO_PROVIDER_ID && !connected.includes(selection.providerID)) return false
   return !!provider.models[selection.modelID]
 }

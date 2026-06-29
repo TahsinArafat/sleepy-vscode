@@ -393,7 +393,7 @@ export async function disconnectProvider(
     // credentials can come from config or env, so auth removal is non-fatal.
     await removeAuth(ctx, id, configured)
 
-    if (id === "kilo") {
+    if (id === KILO_PROVIDER_ID) {
       ctx.postMessage({ type: "profileData", data: null })
     }
 
