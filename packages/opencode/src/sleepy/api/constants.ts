@@ -1,6 +1,6 @@
 // sleepy_change - new file in Sleepy-owned directory
 //
-// Shared constants for the Sleepy AI integration.
+// Shared constants for the Sleepy Code integration.
 
 /** Default Sleepy API URL (local development). */
 export const SLEEPY_API_URL_DEFAULT = "http://localhost:3000"

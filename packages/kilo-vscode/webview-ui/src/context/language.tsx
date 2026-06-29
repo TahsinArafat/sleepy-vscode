@@ -89,7 +89,7 @@ import { dict as kiloTr } from "@kilocode/kilo-i18n/tr"
 import { dict as kiloNl } from "@kilocode/kilo-i18n/nl"
 import { dict as kiloUk } from "@kilocode/kilo-i18n/uk"
 import { dict as kiloIt } from "@kilocode/kilo-i18n/it"
-// sleepy_change start — branding overrides replace "Kilo Code" with "Sleepy AI"
+// sleepy_change start — branding overrides replace "Kilo Code" with "Sleepy Code"
 import { sleepyBrandingOverrides } from "../sleepy/sleepy-i18n-branding"
 // sleepy_change end
 import { useVSCode } from "./vscode"
@@ -124,9 +124,9 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 }
 
 // Merge 4 dict layers: app + ui + kilo + agent manager (kilo and agent manager override last)
-// sleepy_change — apply branding overrides so the UI says "Sleepy AI" instead of "Kilo Code"
+// sleepy_change — apply branding overrides so the UI says "Sleepy Code" instead of "Kilo Code"
 const base = { ...appEn, ...uiEn, ...kiloEn, ...sleepyBrandingOverrides }
-// Apply branding overrides last so "Sleepy AI" wins over Kilo i18n in every locale
+// Apply branding overrides last so "Sleepy Code" wins over Kilo i18n in every locale
 const applyBranding = (d: Record<string, string>) => ({ ...d, ...sleepyBrandingOverrides })
 const dicts: Record<Locale, Record<string, string>> = {
   en: applyBranding({ ...base, ...amEn }),

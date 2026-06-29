@@ -1,6 +1,6 @@
 // sleepy_change - new file in Sleepy-owned directory
 //
-// Sleepy AI custom loader and bundled provider glue.
+// Sleepy Code custom loader and bundled provider glue.
 //
 // Sleepy exposes an OpenAI-compatible API at {gatewayUrl}/api/v1/chat/completions
 // with Bearer token auth. We use the existing @ai-sdk/openai-compatible SDK rather

@@ -93,7 +93,7 @@ export const layer: Layer.Layer<Service, never, Core.Service | Config.Service | 
         if (Object.keys(models).length === 0) yield* cache.refresh("kilo", fetch).pipe(Effect.ignore, Effect.forkDetach)
         yield* addApertis()
 
-        // sleepy_change start — register Sleepy AI provider
+        // sleepy_change start — register Sleepy Code provider
         const sleepyInfo = yield* auth.get("sleepy").pipe(Effect.catch(() => Effect.succeed(undefined)))
         const sleepyTokenFromAuth = sleepyInfo?.type === "api" ? sleepyInfo.key : undefined
         const sleepyToken = sleepyTokenFromAuth ?? process.env.SLEEPY_ACCESS_TOKEN

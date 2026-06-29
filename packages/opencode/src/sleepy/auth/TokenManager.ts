@@ -1,6 +1,6 @@
 // sleepy_change - new file in Sleepy-owned directory
 //
-// In-memory session store for the Sleepy AI platform.
+// In-memory session store for the Sleepy Code platform.
 // The actual persistent storage lives in VS Code SecretStorage;
 // this class is used by the CLI to hold the token in-memory during a session.
 // The VS Code extension passes the token to the CLI via env var on spawn.

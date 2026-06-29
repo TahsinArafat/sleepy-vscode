@@ -1,4 +1,4 @@
-# Sleepy AI Fork — Upstream Merge Strategy
+# Sleepy Code Fork — Upstream Merge Strategy
 
 We fork [Kilo-Org/kilocode](https://github.com/Kilo-Org/kilocode).
 Kilo Code itself forks [opencode](https://github.com/anomalyco/opencode).
@@ -41,10 +41,10 @@ This allows automated scripts to find, preserve, or re-apply our changes during 
 | File | Lines | Purpose |
 |------|-------|---------|
 | `packages/opencode/src/provider/provider.ts` | ~15-20, ~149, ~1494 | Import + register Sleepy bundled provider + custom loader |
-| `packages/opencode/src/provider/models.ts` | ~10-40 | Register Sleepy AI provider in model catalog |
+| `packages/opencode/src/provider/models.ts` | ~10-40 | Register Sleepy Code provider in model catalog |
 | `packages/kilo-vscode/src/extension.ts` | ~4-7, ~70-80, ~420-445 | Auth status bar, login/logout commands, env var pass-through |
 | `packages/kilo-vscode/src/services/cli-backend/server-manager.ts` | ~147-149 | Forward SLEEPY_ACCESS_TOKEN to CLI backend |
-| `packages/kilo-vscode/src/constants.ts` | ~1 | Rename extension to "Sleepy AI" |
+| `packages/kilo-vscode/src/constants.ts` | ~1 | Rename extension to "Sleepy Code" |
 | `packages/kilo-vscode/package.json` | ~2-4, ~11-16, ~21-23, ~426-433, ~1067-1072 | Rebrand, add auth commands, add gatewayUrl setting |
 
 ## Performing an Upstream Merge
