@@ -84,7 +84,8 @@ export async function sleepyLogin(
       const addr = server.address() as { port: number }
       listeningPort = addr.port
       const redirectUri = `http://127.0.0.1:${addr.port}/callback`
-      const consentUrl = `${gatewayUrl}/auth/oauth/consent?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`
+      // Go through the API authorize endpoint which checks session and redirects to the consent page
+      const consentUrl = `${gatewayUrl}/api/auth/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`
 
       console.log(`[Sleepy] Starting OAuth — opening browser to ${consentUrl}`)
       vscode.window.showInformationMessage("Opening browser for Sleepy AI login...")

@@ -3,7 +3,7 @@
   "displayName": "Sleepy AI: AI Coding Agent powered by your models",
   "description": "AI Agent for VS Code powered by Sleepy AI — OAuth login to your Sleepy platform, model routing via OmniRoute.",
   "version": "7.3.54",
-  "icon": "assets/icons/logo-outline-black.png",
+  "icon": "assets/icons/kilo-dark.svg",
   "galleryBanner": {
     "color": "#FFFFFF",
     "theme": "light"
@@ -71,8 +71,8 @@
       }
     ],
     "icons": {
-      "kilo-logo": {
-        "description": "Kilo Code logo",
+      "sleepy-logo": {
+        "description": "Sleepy AI logo",
         "default": {
           "fontPath": "assets/icons/kilo-icon-font.woff2",
           "fontCharacter": "\\F101"
@@ -82,10 +82,10 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "kilo-code-ActivityBar",
-          "title": "Kilo Code",
-          "icon": "assets/icons/kilo-light.png",
-          "darkIcon": "assets/icons/kilo-dark.png"
+          "id": "sleepy-ai-ActivityBar",
+          "title": "Sleepy AI",
+          "icon": "assets/icons/activity-bar-light.svg",
+          "darkIcon": "assets/icons/activity-bar-dark.svg"
         }
       ]
     },
