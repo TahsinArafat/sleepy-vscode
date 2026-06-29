@@ -118,12 +118,6 @@ import {
   type AuthContext,
 } from "./kilo-provider/handlers/auth"
 import {
-  handleRequestCloudSessions,
-  handleRequestCloudSessionData,
-  handleImportAndSend,
-  type CloudSessionContext,
-} from "./kilo-provider/handlers/cloud-session"
-import {
   handlePermissionResponse,
   fetchAndSendPendingPermissions,
   type PermissionContext,
@@ -800,10 +794,6 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
     }
   }
 
-  public openCloudSession(sessionId: string): void {
-    this.postMessage({ type: "openCloudSession", sessionId })
-  }
-
   public selectKiloModel(modelID?: string, agent?: string): void {
     if (!modelID && !agent) return
     this.pendingKiloModel = { ...(modelID && { modelID }), ...(agent && { agent }) }
@@ -1241,35 +1231,11 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
             console.error("[Kilo New] fetchAndSendNotifications failed:", e),
           )
           break
-        case "requestCloudSessions":
-          await handleRequestCloudSessions(this.cloudSessionCtx, message)
-          break
         case "requestGitRemoteUrl":
           void this.getGitRemoteUrl().then((url) => {
             this.postMessage({ type: "gitRemoteUrlLoaded", gitUrl: url ?? null })
           })
           break
-        case "requestCloudSessionData":
-          void handleRequestCloudSessionData(this.cloudSessionCtx, message.sessionId)
-          break
-        case "importAndSend": {
-          const files = parseMessageFiles(message.files)
-          void handleImportAndSend(
-            this.cloudSessionCtx,
-            message.cloudSessionId,
-            message.text,
-            typeof message.messageID === "string" ? message.messageID : undefined,
-            message.providerID,
-            message.modelID,
-            message.agent,
-            message.variant,
-            files,
-            parseReview(message.review, message.text),
-            typeof message.command === "string" ? message.command : undefined,
-            typeof message.commandArgs === "string" ? message.commandArgs : undefined,
-          )
-          break
-        }
         case "dismissNotification":
           await this.handleDismissNotification(message.notificationId)
           break
@@ -2436,8 +2402,6 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
     await fetchNotifications(this.notificationsContext())
   }
 
-  // Cloud session methods extracted to kilo-provider/handlers/cloud-session.ts
-
   private async handleDismissNotification(notificationId: string): Promise<void> {
     await dismissNotification(this.notificationsContext(), notificationId)
   }
@@ -3194,29 +3158,6 @@ export class KiloProvider implements vscode.WebviewViewProvider, TelemetryProper
       getQuestionRevision: () => this.connectionService.getQuestionRevision(),
       pruneQuestionDirectories: (active: Set<string>, dirs: Set<string>) =>
         this.connectionService.pruneQuestionDirectories(active, dirs),
-    }
-  }
-
-  // Cloud session handlers extracted to kilo-provider/handlers/cloud-session.ts
-
-  private get cloudSessionCtx(): CloudSessionContext {
-    const self = this
-    return {
-      client: this.client,
-      get currentSession() {
-        return self.currentSession
-      },
-      set currentSession(session) {
-        self.stopCurrentSessionProcesses(session?.id)
-        self.setCurrentSession(session)
-        if (session) self.contextSessionID = session.id
-      },
-      trackedSessionIds: this.trackedSessionIds,
-      connectionService: this.connectionService,
-      postMessage: (msg) => this.postMessage(msg),
-      getWorkspaceDirectory: (sid) => this.getWorkspaceDirectory(sid),
-      gatherEditorContext: () => this.gatherEditorContext(),
-      runWithMessageConfirmation: (id, label, run) => runWithMessageConfirmation(this.confirmations, id, label, run),
     }
   }
 
