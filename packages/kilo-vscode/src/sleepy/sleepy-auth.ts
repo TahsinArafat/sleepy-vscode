@@ -39,6 +39,8 @@ const GATEWAY_URL_SETTING = "sleepy.gatewayUrl"
  *
  * @returns The resolved SleepySession on success.
  */
+const OAUTH_TIMEOUT_MS = 120_000
+
 export async function sleepyLogin(
   tokenUpdater: (token: string | null) => Promise<void>,
 ): Promise<SleepySession> {
@@ -46,6 +48,19 @@ export async function sleepyLogin(
 
   return new Promise<SleepySession>((resolve, reject) => {
     let listeningPort = 0
+    let settled = false
+
+    const done = (fn: (value: any) => void, value: any) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      fn(value)
+    }
+
+    const timer = setTimeout(() => {
+      server.close()
+      done(reject, new Error("OAuth login timed out after 120 seconds"))
+    }, OAUTH_TIMEOUT_MS)
 
     const server = http.createServer(async (req, res) => {
       const url = new URL(req.url ?? "/", `http://${req.headers.host}`)
@@ -57,13 +72,13 @@ export async function sleepyLogin(
         if (error) {
           sendHtmlResponse(res, 400, `Authorization failed: ${error}`)
           server.close()
-          reject(new Error(error))
+          done(reject, new Error(error))
           return
         }
         if (!code) {
           sendHtmlResponse(res, 400, "Missing authorization code")
           server.close()
-          reject(new Error("Missing authorization code"))
+          done(reject, new Error("Missing authorization code"))
           return
         }
 
@@ -73,9 +88,9 @@ export async function sleepyLogin(
         try {
           const session = await exchangeCode(gatewayUrl, code, `http://127.0.0.1:${listeningPort}/callback`)
           await tokenUpdater(session.accessToken)
-          resolve(session)
+          done(resolve, session)
         } catch (err) {
-          reject(err)
+          done(reject, err)
         }
       }
     })
@@ -93,18 +108,18 @@ export async function sleepyLogin(
         (ok) => {
           if (!ok) {
             server.close()
-            reject(new Error("Failed to open browser — no handler for protocol"))
+            done(reject, new Error("Failed to open browser — no handler for protocol"))
           }
         },
         (err: unknown) => {
           server.close()
-          reject(new Error(`Failed to open browser: ${err instanceof Error ? err.message : String(err)}`))
+          done(reject, new Error(`Failed to open browser: ${err instanceof Error ? err.message : String(err)}`))
         },
       )
     })
 
     server.on("error", (err) => {
-      reject(new Error(`Auth server error: ${err.message}`))
+      done(reject, new Error(`Auth server error: ${err.message}`))
     })
   })
 }
@@ -124,8 +139,8 @@ export async function getStoredSession(
   return {
     accessToken,
     email: email ?? "unknown",
-    tier: "free",
-    endpoint: resolveGatewayUrl(),
+    tier: (await secrets.get("sleepy.tier")) ?? "free",
+    endpoint: (await secrets.get("sleepy.endpoint")) ?? resolveGatewayUrl(),
   }
 }
 
@@ -137,6 +152,7 @@ export async function storeSession(
   await secrets.store("sleepy.accessToken", session.accessToken)
   await secrets.store("sleepy.email", session.email)
   await secrets.store("sleepy.tier", session.tier)
+  await secrets.store("sleepy.endpoint", session.endpoint)
 }
 
 /** Remove session data from SecretStorage. */
@@ -144,6 +160,7 @@ export async function clearSession(secrets: vscode.SecretStorage): Promise<void>
   await secrets.delete("sleepy.accessToken")
   await secrets.delete("sleepy.email")
   await secrets.delete("sleepy.tier")
+  await secrets.delete("sleepy.endpoint")
 }
 
 // ---------------------------------------------------------------------------
