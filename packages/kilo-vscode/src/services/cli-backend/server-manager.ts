@@ -144,6 +144,9 @@ export class ServerManager {
           KILO_VSCODE_VERSION: vscode.version,
           KILOCODE_EDITOR_NAME: `${vscode.env.appName} ${vscode.version}`,
           ...(!claudeCompat && { KILO_DISABLE_CLAUDE_CODE: "true" }),
+          // sleepy_change start — forward Sleepy access token to CLI backend
+          ...(process.env.SLEEPY_ACCESS_TOKEN ? { SLEEPY_ACCESS_TOKEN: process.env.SLEEPY_ACCESS_TOKEN } : {}),
+          // sleepy_change end
           ...resolveTreeSitterEnv(this.context.extensionPath),
           ...bwrapEnv,
         },

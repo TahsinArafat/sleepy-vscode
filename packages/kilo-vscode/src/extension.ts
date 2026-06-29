@@ -25,6 +25,10 @@ import { registerHeapSnapshot } from "./commands/heap-snapshot"
 import { RemoteStatusService } from "./services/RemoteStatusService"
 import { markWorkspace } from "./util/spotlight"
 import { createNotebookBridge } from "./services/notebook"
+// sleepy_change start
+import { SleepyAuthStatusBar } from "./sleepy/SleepyAuthStatusBar"
+import { sleepyLogin, sleepyLogout, getStoredSession, storeSession, clearSession } from "./sleepy/sleepy-auth"
+// sleepy_change end
 
 let agentManager: AgentManagerProvider | undefined
 let shuttingDown = false
@@ -68,6 +72,21 @@ export function activate(context: vscode.ExtensionContext) {
   const remoteService = new RemoteStatusService()
   context.subscriptions.push(remoteService)
   connectionService.setRemoteService(remoteService)
+
+  // sleepy_change start
+  // Create Sleepy auth status bar (one status bar item for auth state)
+  const sleepyAuthBar = new SleepyAuthStatusBar()
+  context.subscriptions.push(sleepyAuthBar)
+
+  // Restore previously stored session
+  getStoredSession(context.secrets).then((session) => {
+    sleepyAuthBar.updateFromSession(session)
+    if (session) {
+      // Set env var so spawned CLI processes pick up the token
+      process.env.SLEEPY_ACCESS_TOKEN = session.accessToken
+    }
+  })
+  // sleepy_change end
 
   // Re-register browser automation MCP server on CLI backend reconnect, configure telemetry,
   // set remote service client, and reload autocomplete so it picks up the now-available backend connection.
@@ -416,6 +435,42 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("kilo-code.new.toggleRemote", () => {
       remoteService.toggle().catch((err) => console.error("[Kilo New] toggleRemote command failed:", err))
     }),
+    // sleepy_change start
+    vscode.commands.registerCommand("sleepy.login", async () => {
+      try {
+        const session = await sleepyLogin(async (token) => {
+          if (token) {
+            await context.secrets.store("sleepy.accessToken", token)
+            // Also set env var for CLI backend
+            process.env.SLEEPY_ACCESS_TOKEN = token
+          } else {
+            await clearSession(context.secrets)
+            delete process.env.SLEEPY_ACCESS_TOKEN
+          }
+        })
+        if (session) {
+          await storeSession(context.secrets, session)
+          process.env.SLEEPY_ACCESS_TOKEN = session.accessToken
+          sleepyAuthBar.updateFromSession(session)
+          vscode.window.showInformationMessage(`Signed in to Sleepy AI as ${session.email}`)
+          // Reload to reset connection with new auth
+          vscode.commands.executeCommand("workbench.action.reloadWindow")
+        }
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Sleepy AI login failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        )
+      }
+    }),
+    vscode.commands.registerCommand("sleepy.logout", async () => {
+      await clearSession(context.secrets)
+      delete process.env.SLEEPY_ACCESS_TOKEN
+      sleepyAuthBar.clearAuth()
+      vscode.window.showInformationMessage("Signed out of Sleepy AI")
+      // Reload to reset connection
+      vscode.commands.executeCommand("workbench.action.reloadWindow")
+    }),
+    // sleepy_change end
     vscode.commands.registerCommand("kilo-code.new.openInTab", () => {
       return openKiloInNewTab(
         context,

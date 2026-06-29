@@ -42,6 +42,12 @@ import {
 } from "@/kilocode/provider/provider"
 import * as ModelsRefresh from "@/kilocode/provider/models-refresh"
 // kilocode_change end
+// sleepy_change start
+import {
+  SLEEPY_BUNDLED_PROVIDERS,
+  sleepyCustomLoaders,
+} from "@/sleepy/api/SleepyProvider"
+// sleepy_change end
 import { ProviderError } from "./error"
 
 const log = Log.create({ service: "provider" })
@@ -147,6 +153,7 @@ const BUNDLED_PROVIDERS: Record<string, () => Promise<(opts: any) => BundledSDK>
     import("@opencode-ai/core/github-copilot/copilot-provider").then((m) => m.createOpenaiCompatible),
   "venice-ai-sdk-provider": () => import("venice-ai-sdk-provider").then((m) => m.createVenice),
   ...KILO_BUNDLED_PROVIDERS, // kilocode_change
+  ...SLEEPY_BUNDLED_PROVIDERS, // sleepy_change
 }
 
 type CustomModelLoader = (sdk: any, modelID: string, options?: Record<string, any>) => Promise<any>
@@ -1491,7 +1498,7 @@ export const layer = Layer.effect(
         // kilocode_change start - resolve env once for patchCustomLoaderResult (azure env fallback)
         const kiloEnv = yield* env.all()
         // kilocode_change end
-        for (const [id, fn] of Object.entries({ ...custom(dep), ...kiloCustomLoaders(dep) })) {
+        for (const [id, fn] of Object.entries({ ...custom(dep), ...kiloCustomLoaders(dep), ...sleepyCustomLoaders(dep) })) {
           // kilocode_change
           const providerID = ProviderID.make(id)
           if (disabled.has(providerID)) continue

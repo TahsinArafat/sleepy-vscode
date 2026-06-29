@@ -91,6 +91,45 @@ export const layer: Layer.Layer<Service, never, Core.Service | Config.Service | 
         }
         if (Object.keys(models).length === 0) yield* cache.refresh("kilo", fetch).pipe(Effect.ignore, Effect.forkDetach)
         yield* addApertis()
+
+        // sleepy_change start — register Sleepy AI provider
+        const sleepyInfo = yield* auth.get("sleepy").pipe(Effect.catch(() => Effect.succeed(undefined)))
+        const sleepyTokenFromAuth = sleepyInfo?.type === "api" ? sleepyInfo.key : undefined
+        const sleepyToken = sleepyTokenFromAuth ?? process.env.SLEEPY_ACCESS_TOKEN
+        if (sleepyToken || cfg.provider?.sleepy?.options?.apiKey) {
+          const sleepyOpts = cfg.provider?.sleepy?.options
+          const sleepyURL = sleepyOpts?.baseURL ?? process.env.SLEEPY_API_URL ?? "http://localhost:3000"
+          const token = sleepyToken ?? sleepyOpts?.apiKey
+
+          // Fetch models from the Sleepy API (use globalThis.fetch to avoid shadowing by the `fetch` options var above)
+          const sleepyModels: Record<string, any> = yield* Effect.promise(async () => {
+            const res = await globalThis.fetch(`${sleepyURL}/api/models`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
+            if (!res.ok) return {}
+            const raw = await res.json() as Array<{ modelId: string; name: string; omniRouteModelId: string }>
+            const result: Record<string, any> = {}
+            for (const m of raw) {
+              result[m.modelId] = {
+                id: m.omniRouteModelId,
+                name: m.name,
+                provider: { npm: "@sleepy/sleepy-gateway" },
+              }
+            }
+            return result
+          }).pipe(Effect.catch(() => Effect.succeed({})))
+
+          providers.sleepy = {
+            id: "sleepy",
+            name: "Sleepy AI",
+            env: ["SLEEPY_ACCESS_TOKEN"],
+            api: `${sleepyURL}/api/v1`,
+            npm: "@sleepy/sleepy-gateway",
+            models: sleepyModels,
+          }
+        }
+        // sleepy_change end
+
         return providers
       })
 

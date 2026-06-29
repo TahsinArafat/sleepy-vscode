@@ -1,1 +1,2 @@
-export const EXTENSION_DISPLAY_NAME = "Kilo Code"
+// sleepy_change
+export const EXTENSION_DISPLAY_NAME = "Sleepy AI"
