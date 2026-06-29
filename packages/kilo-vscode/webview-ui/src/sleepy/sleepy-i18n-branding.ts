@@ -69,4 +69,16 @@ export const sleepyBrandingOverrides: Record<string, string> = {
   // Sidebar getting started
   "sidebar.gettingStarted.line1":
     "Sleepy Code includes free models so you can start immediately.",
+
+  // -- Suppress cloud sessions UI (disabled feature) --
+  "session.tab.local": "Local",
+  "session.tab.cloud": "",
+  "session.cloud.repoOnly": "",
+  "session.cloud.import": "",
+  "session.cloud.import.title": "",
+  "session.cloud.import.placeholder": "",
+  "session.cloud.import.button": "",
+  "session.cloud.import.invalid": "",
+  "session.cloud.import.legacy": "",
+  "session.cloud.import.failed": "",
 }
