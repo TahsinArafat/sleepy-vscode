@@ -1,6 +1,6 @@
 // sleepy_change - new file
 //
-// Status bar indicator for Sleepy AI auth state.
+// Status bar indicator for Sleepy Code auth state.
 // Pattern copied from RemoteStatusService.
 
 import * as vscode from "vscode"
@@ -10,8 +10,8 @@ export type AuthState = { loggedIn: boolean; email?: string }
 type Listener = (state: AuthState) => void
 
 /**
- * Owns the Sleepy AI auth status bar item.
- * Shows "Sign in to Sleepy AI" when logged out, user email when logged in.
+ * Owns the Sleepy Code auth status bar item.
+ * Shows "Sign in to Sleepy Code" when logged out, user email when logged in.
  */
 export class SleepyAuthStatusBar implements vscode.Disposable {
   private state: AuthState = { loggedIn: false }
@@ -59,14 +59,14 @@ export class SleepyAuthStatusBar implements vscode.Disposable {
 
   private sync(): void {
     if (!this.state.loggedIn || !this.state.email) {
-      this.bar.text = "$(sign-in) Sleepy AI: Sign In"
-      this.bar.tooltip = "Sign in to Sleepy AI"
+      this.bar.text = "$(sign-in) Sleepy Code: Sign In"
+      this.bar.tooltip = "Sign in to Sleepy Code"
       this.bar.command = "sleepy.login"
       this.bar.color = new vscode.ThemeColor("editorWarning.foreground")
       this.bar.show()
       return
     }
-    this.bar.text = `$(pass-filled) Sleepy AI: ${this.state.email}`
+    this.bar.text = `$(pass-filled) Sleepy Code: ${this.state.email}`
     this.bar.tooltip = `Signed in as ${this.state.email}`
     this.bar.command = "sleepy.logout"
     this.bar.color = new vscode.ThemeColor("testing.iconPassed")

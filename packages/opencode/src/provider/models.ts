@@ -81,9 +81,10 @@ export const layer: Layer.Layer<Service, never, Core.Service | Config.Service | 
           ...(org ? { kilocodeOrganizationId: org } : {}),
         }
         const models = yield* cache.fetch("kilo", fetch).pipe(Effect.catch(() => Effect.succeed({})))
+        // sleepy_change — branding: upstream name is "Kilo Gateway"
         providers.kilo = {
           id: "kilo",
-          name: "Kilo Gateway",
+          name: "Sleepy Code",
           env: ["KILO_API_KEY"],
           api: KILO_OPENROUTER_BASE.endsWith("/") ? KILO_OPENROUTER_BASE : `${KILO_OPENROUTER_BASE}/`,
           npm: "@kilocode/kilo-gateway",
@@ -121,7 +122,7 @@ export const layer: Layer.Layer<Service, never, Core.Service | Config.Service | 
 
           providers.sleepy = {
             id: "sleepy",
-            name: "Sleepy AI",
+            name: "Sleepy Code",
             env: ["SLEEPY_ACCESS_TOKEN"],
             api: `${sleepyURL}/api/v1`,
             npm: "@sleepy/sleepy-gateway",

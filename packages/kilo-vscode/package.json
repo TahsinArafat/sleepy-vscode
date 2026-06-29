@@ -1,9 +1,9 @@
 {
   "name": "sleepy-ai",
-  "displayName": "Sleepy AI: AI Coding Agent powered by your models",
-  "description": "AI Agent for VS Code powered by Sleepy AI — OAuth login to your Sleepy platform, model routing via OmniRoute.",
+  "displayName": "Sleepy Code: AI Coding Agent powered by your models",
+  "description": "AI Agent for VS Code powered by Sleepy Code — OAuth login to your Sleepy platform, model routing via OmniRoute.",
   "version": "7.3.54",
-  "icon": "assets/icons/kilo-dark.svg",
+  "icon": "assets/icons/logo-outline-black.png",
   "galleryBanner": {
     "color": "#FFFFFF",
     "theme": "light"
@@ -19,7 +19,7 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Sleepy AI"
+    "name": "Sleepy Code"
   },
   "categories": [
     "AI",
@@ -72,7 +72,7 @@
     ],
     "icons": {
       "sleepy-logo": {
-        "description": "Sleepy AI logo",
+        "description": "Sleepy Code logo",
         "default": {
           "fontPath": "assets/icons/kilo-icon-font.woff2",
           "fontCharacter": "\\F101"
@@ -83,7 +83,7 @@
       "activitybar": [
         {
           "id": "sleepy-ai-ActivityBar",
-          "title": "Sleepy AI",
+          "title": "Sleepy Code",
           "icon": "assets/icons/activity-bar-light.svg",
           "darkIcon": "assets/icons/activity-bar-dark.svg"
         }
@@ -425,13 +425,13 @@
       },
       {
         "command": "sleepy.login",
-        "title": "Sign In to Sleepy AI",
-        "category": "Sleepy AI"
+        "title": "Sign In to Sleepy Code",
+        "category": "Sleepy Code"
       },
       {
         "command": "sleepy.logout",
-        "title": "Sign Out of Sleepy AI",
-        "category": "Sleepy AI"
+        "title": "Sign Out of Sleepy Code",
+        "category": "Sleepy Code"
       }
     ],
     "submenus": [
@@ -1067,7 +1067,7 @@
         "sleepy.gatewayUrl": {
           "type": "string",
           "default": "http://localhost:3000",
-          "description": "Base URL of your Sleepy AI platform gateway (e.g. https://sleepy.yourdomain.com). Defaults to local development server."
+          "description": "Base URL of your Sleepy Code platform gateway (e.g. https://sleepy.yourdomain.com). Defaults to local development server."
         }
       }
     }

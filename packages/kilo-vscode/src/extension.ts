@@ -452,13 +452,13 @@ export function activate(context: vscode.ExtensionContext) {
           await storeSession(context.secrets, session)
           process.env.SLEEPY_ACCESS_TOKEN = session.accessToken
           sleepyAuthBar.updateFromSession(session)
-          vscode.window.showInformationMessage(`Signed in to Sleepy AI as ${session.email}`)
+          vscode.window.showInformationMessage(`Signed in to Sleepy Code as ${session.email}`)
           // Reload to reset connection with new auth
           vscode.commands.executeCommand("workbench.action.reloadWindow")
         }
       } catch (err) {
         vscode.window.showErrorMessage(
-          `Sleepy AI login failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+          `Sleepy Code login failed: ${err instanceof Error ? err.message : "Unknown error"}`,
         )
       }
     }),
@@ -466,7 +466,7 @@ export function activate(context: vscode.ExtensionContext) {
       await clearSession(context.secrets)
       delete process.env.SLEEPY_ACCESS_TOKEN
       sleepyAuthBar.clearAuth()
-      vscode.window.showInformationMessage("Signed out of Sleepy AI")
+      vscode.window.showInformationMessage("Signed out of Sleepy Code")
       // Reload to reset connection
       vscode.commands.executeCommand("workbench.action.reloadWindow")
     }),

@@ -89,6 +89,9 @@ import { dict as kiloTr } from "@kilocode/kilo-i18n/tr"
 import { dict as kiloNl } from "@kilocode/kilo-i18n/nl"
 import { dict as kiloUk } from "@kilocode/kilo-i18n/uk"
 import { dict as kiloIt } from "@kilocode/kilo-i18n/it"
+// sleepy_change start — branding overrides replace "Kilo Code" with "Sleepy AI"
+import { sleepyBrandingOverrides } from "../sleepy/sleepy-i18n-branding"
+// sleepy_change end
 import { useVSCode } from "./vscode"
 import { normalizeLocale as _normalizeLocale, resolveTemplate as _resolveTemplate } from "./language-utils"
 
@@ -121,28 +124,31 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 }
 
 // Merge 4 dict layers: app + ui + kilo + agent manager (kilo and agent manager override last)
-const base = { ...appEn, ...uiEn, ...kiloEn }
+// sleepy_change — apply branding overrides so the UI says "Sleepy AI" instead of "Kilo Code"
+const base = { ...appEn, ...uiEn, ...kiloEn, ...sleepyBrandingOverrides }
+// Apply branding overrides last so "Sleepy AI" wins over Kilo i18n in every locale
+const applyBranding = (d: Record<string, string>) => ({ ...d, ...sleepyBrandingOverrides })
 const dicts: Record<Locale, Record<string, string>> = {
-  en: { ...base, ...amEn },
-  zh: { ...base, ...appZh, ...uiZh, ...kiloZh, ...amEn, ...amZh },
-  zht: { ...base, ...appZht, ...uiZht, ...kiloZht, ...amEn, ...amZht },
-  ko: { ...base, ...appKo, ...uiKo, ...kiloKo, ...amEn, ...amKo },
-  de: { ...base, ...appDe, ...uiDe, ...kiloDe, ...amEn, ...amDe },
-  es: { ...base, ...appEs, ...uiEs, ...kiloEs, ...amEn, ...amEs },
-  fr: { ...base, ...appFr, ...uiFr, ...kiloFr, ...amEn, ...amFr },
-  da: { ...base, ...appDa, ...uiDa, ...kiloDa, ...amEn, ...amDa },
-  ja: { ...base, ...appJa, ...uiJa, ...kiloJa, ...amEn, ...amJa },
-  pl: { ...base, ...appPl, ...uiPl, ...kiloPl, ...amEn, ...amPl },
-  ru: { ...base, ...appRu, ...uiRu, ...kiloRu, ...amEn, ...amRu },
-  ar: { ...base, ...appAr, ...uiAr, ...kiloAr, ...amEn, ...amAr },
-  no: { ...base, ...appNo, ...uiNo, ...kiloNo, ...amEn, ...amNo },
-  br: { ...base, ...appBr, ...uiBr, ...kiloBr, ...amEn, ...amBr },
-  th: { ...base, ...appTh, ...uiTh, ...kiloTh, ...amEn, ...amTh },
-  bs: { ...base, ...appBs, ...uiBs, ...kiloBs, ...amEn, ...amBs },
-  tr: { ...base, ...appTr, ...uiTr, ...kiloTr, ...amEn, ...amTr },
-  nl: { ...base, ...appNl, ...uiNl, ...kiloNl, ...amEn, ...amNl },
-  uk: { ...base, ...appUk, ...uiUk, ...kiloUk, ...amEn, ...amUk },
-  it: { ...base, ...appIt, ...uiIt, ...kiloIt, ...amEn, ...amIt },
+  en: applyBranding({ ...base, ...amEn }),
+  zh: applyBranding({ ...base, ...appZh, ...uiZh, ...kiloZh, ...amEn, ...amZh }),
+  zht: applyBranding({ ...base, ...appZht, ...uiZht, ...kiloZht, ...amEn, ...amZht }),
+  ko: applyBranding({ ...base, ...appKo, ...uiKo, ...kiloKo, ...amEn, ...amKo }),
+  de: applyBranding({ ...base, ...appDe, ...uiDe, ...kiloDe, ...amEn, ...amDe }),
+  es: applyBranding({ ...base, ...appEs, ...uiEs, ...kiloEs, ...amEn, ...amEs }),
+  fr: applyBranding({ ...base, ...appFr, ...uiFr, ...kiloFr, ...amEn, ...amFr }),
+  da: applyBranding({ ...base, ...appDa, ...uiDa, ...kiloDa, ...amEn, ...amDa }),
+  ja: applyBranding({ ...base, ...appJa, ...uiJa, ...kiloJa, ...amEn, ...amJa }),
+  pl: applyBranding({ ...base, ...appPl, ...uiPl, ...kiloPl, ...amEn, ...amPl }),
+  ru: applyBranding({ ...base, ...appRu, ...uiRu, ...kiloRu, ...amEn, ...amRu }),
+  ar: applyBranding({ ...base, ...appAr, ...uiAr, ...kiloAr, ...amEn, ...amAr }),
+  no: applyBranding({ ...base, ...appNo, ...uiNo, ...kiloNo, ...amEn, ...amNo }),
+  br: applyBranding({ ...base, ...appBr, ...uiBr, ...kiloBr, ...amEn, ...amBr }),
+  th: applyBranding({ ...base, ...appTh, ...uiTh, ...kiloTh, ...amEn, ...amTh }),
+  bs: applyBranding({ ...base, ...appBs, ...uiBs, ...kiloBs, ...amEn, ...amBs }),
+  tr: applyBranding({ ...base, ...appTr, ...uiTr, ...kiloTr, ...amEn, ...amTr }),
+  nl: applyBranding({ ...base, ...appNl, ...uiNl, ...kiloNl, ...amEn, ...amNl }),
+  uk: applyBranding({ ...base, ...appUk, ...uiUk, ...kiloUk, ...amEn, ...amUk }),
+  it: applyBranding({ ...base, ...appIt, ...uiIt, ...kiloIt, ...amEn, ...amIt }),
 }
 
 function normalizeLocale(lang: string): Locale {

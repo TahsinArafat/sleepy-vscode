@@ -1,6 +1,6 @@
 // sleepy_change - new file
 //
-// Sleepy AI OAuth login/logout for the VS Code extension.
+// Sleepy Code OAuth login/logout for the VS Code extension.
 //
 // Flow:
 //   1. Start a local HTTP server on a random port (127.0.0.1 only)
@@ -103,7 +103,7 @@ export async function sleepyLogin(
       const consentUrl = `${gatewayUrl}/api/auth/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`
 
       console.log(`[Sleepy] Starting OAuth — opening browser to ${consentUrl}`)
-      vscode.window.showInformationMessage("Opening browser for Sleepy AI login...")
+      vscode.window.showInformationMessage("Opening browser for Sleepy Code login...")
       vscode.env.openExternal(vscode.Uri.parse(consentUrl)).then(
         (ok) => {
           if (!ok) {
